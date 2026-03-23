@@ -62,11 +62,18 @@
             };
 
             const intlDays = {
-                "1-1": "New Year's Day", "2-14": "Valentine's Day ❤️",
-                "3-8": "Intl. Women's Day", "3-22": "World Water Day",
-                "3-23": "World Meteorological Day 🌤️", // Added for today!
-                "4-22": "Earth Day 🌍", "5-1": "Labour Day",
-                "10-29": "Republic Day 🇹🇷", "12-25": "Christmas"
+                  "1-1": "New Year's Day", "1-24": "International Day of Education",
+                "2-11": "Women & Girls in Science Day", "2-13": "World Radio Day 📻", "2-14": "Valentine's Day ❤️", "2-21": "Mother Language Day",
+                "3-8": "International Women's Day", "3-20": "International Day of Happiness", "3-21": "World Poetry Day", "3-22": "World Water Day",
+                "4-7": "World Health Day", "4-22": "Earth Day 🌍",
+                "5-1": "Labour Day", "5-3": "World Press Freedom Day", "5-20": "World Bee Day 🐝",
+                "6-5": "World Environment Day", "6-8": "World Oceans Day", "6-21": "International Day of Yoga",
+                "7-11": "World Population Day", "7-18": "Nelson Mandela Day",
+                "8-12": "International Youth Day", "8-19": "World Humanitarian Day",
+                "9-15": "International Day of Democracy", "9-21": "International Day of Peace",
+                "10-5": "World Teachers' Day", "10-16": "World Food Day", "10-24": "United Nations Day",
+                "11-16": "International Day for Tolerance", "11-20": "World Children's Day",
+                "12-1": "World AIDS Day", "12-10": "Human Rights Day"
             };
 
             if (trDays[key]) return `<span class="highlight">${trDays[key]}</span>`;
