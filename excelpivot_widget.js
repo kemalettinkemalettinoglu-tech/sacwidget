@@ -166,8 +166,6 @@
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: "array" });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    
-                    // Boş hücrelerin null kalması için defval: null ekliyoruz
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: null });
 
                     if (jsonData.length < 2) throw new Error("Veri yetersiz.");
@@ -215,12 +213,10 @@
 
                             if (!groupedData[groupKey]) {
                                 groupedData[groupKey] = { keyParts, date: dateVal, values: {} };
-                                // Varsayılan değer başlangıçta boş string "" olarak belirlenir
                                 metrics.forEach(m => groupedData[groupKey].values[m] = "");
                             }
 
                             const rawVal = row[j];
-                            // Hücre null, undefined veya boş metin değilse değeri yazıyoruz
                             if (rawVal !== null && rawVal !== undefined && String(rawVal).trim() !== "") {
                                 const parsedVal = parseFloat(rawVal);
                                 groupedData[groupKey].values[metricName] = isNaN(parsedVal) ? rawVal : parsedVal;
@@ -234,14 +230,23 @@
                     metrics.forEach(m => outputHeaders.push(m));
 
                     const outputRows = [outputHeaders];
+
                     Object.keys(groupedData).forEach(gKey => {
                         const item = groupedData[gKey];
                         const rowData = [...item.keyParts, item.date];
+
                         metrics.forEach(m => {
-                            const val = item.values[m];
-                            // Değer boşsa kesinlikle "" olarak diziye aktarılır
-                            rowData.push((val !== null && val !== undefined) ? val : "");
+                            let val = item.values[m];
+                            
+                            // --- SIFIRLARI SİLME/TEMİZLEME ADIMI ---
+                            // Eğer değer 0 (sayısal veya metinsel) ya da null/undefined ise boş metin yapıyoruz
+                            if (val === 0 || val === "0" || val === null || val === undefined) {
+                                val = "";
+                            }
+
+                            rowData.push(val);
                         });
+
                         outputRows.push(rowData);
                     });
 
