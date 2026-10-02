@@ -164,10 +164,11 @@
             reader.onload = (e) => {
                 try {
                     const data = new Uint8Array(e.target.result);
-                    // Boş hücrelerin null/undefined olarak okunması için raw seçeneği ekli
-                    const workbook = XLSX.read(data, { type: "array", cellHTML: false });
+                    const workbook = XLSX.read(data, { type: "array" });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
+                    
+                    // Boş hücrelerin null kalması için defval: null ekliyoruz
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: null });
 
                     if (jsonData.length < 2) throw new Error("Veri yetersiz.");
 
@@ -176,7 +177,7 @@
 
                     let typeCol = -1;
                     for (let j = 0; j < headers.length; j++) {
-                        const hVal = String(headers[j]).trim();
+                        const hVal = String(headers[j] || "").trim();
                         if (!isNaN(hVal) && hVal.length >= 6) {
                             typeCol = j - 1;
                             break;
@@ -185,7 +186,7 @@
 
                     if (typeCol === -1) {
                         for (let j = 0; j < headers.length; j++) {
-                            const val = String(rows[0] ? rows[0][j] : "").toUpperCase();
+                            const val = String(rows[0] ? rows[0][j] || "" : "").toUpperCase();
                             if (val.includes("MİKTAR") || val.includes("MIKTAR") || val.includes("FİYAT") || val.includes("FIYAT") || val.includes("TUTAR")) {
                                 typeCol = j;
                                 break;
@@ -205,7 +206,7 @@
                         if (!metricName) return;
 
                         for (let j = dateStartCol; j < headers.length; j++) {
-                            const dateVal = String(headers[j]);
+                            const dateVal = String(headers[j] || "");
                             let keyParts = [];
                             for (let k = 0; k < keyColsCount; k++) {
                                 keyParts.push(String(row[k] || "").trim());
@@ -214,13 +215,13 @@
 
                             if (!groupedData[groupKey]) {
                                 groupedData[groupKey] = { keyParts, date: dateVal, values: {} };
-                                // Varsayılan değer olarak kesin şekilde boş metin "" atanır
+                                // Varsayılan değer başlangıçta boş string "" olarak belirlenir
                                 metrics.forEach(m => groupedData[groupKey].values[m] = "");
                             }
 
                             const rawVal = row[j];
-                            // Sadece dolu ve 0 haricindeki değerleri veya sayısal 0'ı (eğer giren 0 ise) kontrol edelim
-                            if (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== "") {
+                            // Hücre null, undefined veya boş metin değilse değeri yazıyoruz
+                            if (rawVal !== null && rawVal !== undefined && String(rawVal).trim() !== "") {
                                 const parsedVal = parseFloat(rawVal);
                                 groupedData[groupKey].values[metricName] = isNaN(parsedVal) ? rawVal : parsedVal;
                             }
@@ -236,7 +237,11 @@
                     Object.keys(groupedData).forEach(gKey => {
                         const item = groupedData[gKey];
                         const rowData = [...item.keyParts, item.date];
-                        metrics.forEach(m => rowData.push(item.values[m]));
+                        metrics.forEach(m => {
+                            const val = item.values[m];
+                            // Değer boşsa kesinlikle "" olarak diziye aktarılır
+                            rowData.push((val !== null && val !== undefined) ? val : "");
+                        });
                         outputRows.push(rowData);
                     });
 
