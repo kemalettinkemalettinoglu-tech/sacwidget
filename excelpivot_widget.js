@@ -8,13 +8,12 @@
                 background: #ffffff;
                 border: 1px solid #d9d9d9;
                 border-radius: 8px;
-                padding: 20px;
-                max-width: 480px;
+                padding: 16px;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             }
             .card-title {
-                margin: 0 0 16px 0;
-                font-size: 16px;
+                margin: 0 0 12px 0;
+                font-size: 15px;
                 font-weight: 600;
                 color: #1d2d3e;
                 display: flex;
@@ -24,7 +23,7 @@
             .drop-zone {
                 border: 2px dashed #b0c4de;
                 border-radius: 6px;
-                padding: 24px;
+                padding: 20px;
                 text-align: center;
                 background: #f8fafc;
                 cursor: pointer;
@@ -35,14 +34,13 @@
                 background: #f0f7ff;
             }
             .drop-icon {
-                font-size: 28px;
-                margin-bottom: 8px;
+                font-size: 26px;
+                margin-bottom: 6px;
                 color: #0070f2;
             }
             .drop-text {
-                font-size: 13px;
+                font-size: 12px;
                 color: #555555;
-                margin-bottom: 4px;
             }
             .file-name {
                 font-size: 12px;
@@ -56,16 +54,15 @@
             }
             .btn-action {
                 width: 100%;
-                margin-top: 16px;
+                margin-top: 12px;
                 padding: 10px;
                 background-color: #0070f2;
                 color: #ffffff;
                 border: none;
                 border-radius: 6px;
-                font-size: 14px;
+                font-size: 13px;
                 font-weight: 500;
                 cursor: pointer;
-                transition: background 0.2s;
             }
             .btn-action:hover {
                 background-color: #0054b4;
@@ -75,7 +72,7 @@
                 cursor: not-allowed;
             }
             .status-msg {
-                margin-top: 12px;
+                margin-top: 10px;
                 font-size: 12px;
                 text-align: center;
             }
@@ -84,9 +81,7 @@
         </style>
 
         <div>
-            <div class="card-title">
-                📊 Excel Tablo Dönüştürücü
-            </div>
+            <div class="card-title">📊 Excel Tablo Dönüştürücü</div>
             
             <div class="drop-zone" id="dropZone">
                 <div class="drop-icon">📁</div>
@@ -108,8 +103,10 @@
             this._shadowRoot = this.attachShadow({ mode: "open" });
             this._shadowRoot.appendChild(template.content.cloneNode(true));
             this._selectedFile = null;
+            this.loadSheetJS();
+        }
 
-            // SheetJS Kütüphanesini Arka Planda Yükleme
+        loadSheetJS() {
             if (!window.XLSX) {
                 const script = document.createElement("script");
                 script.src = "https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js";
@@ -121,38 +118,40 @@
             const dropZone = this._shadowRoot.getElementById("dropZone");
             const fileInput = this._shadowRoot.getElementById("fileInput");
             const convertBtn = this._shadowRoot.getElementById("convertBtn");
-            const fileNameDisplay = this._shadowRoot.getElementById("fileName");
 
-            dropZone.addEventListener("click", () => fileInput.click());
+            if (dropZone) {
+                dropZone.addEventListener("click", () => fileInput.click());
+                dropZone.addEventListener("dragover", (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add("dragover");
+                });
+                dropZone.addEventListener("dragleave", () => {
+                    dropZone.classList.remove("dragover");
+                });
+                dropZone.addEventListener("drop", (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove("dragover");
+                    if (e.dataTransfer.files.length > 0) {
+                        this.handleFileSelect(e.dataTransfer.files[0]);
+                    }
+                });
+            }
 
-            dropZone.addEventListener("dragover", (e) => {
-                e.preventDefault();
-                dropZone.classList.add("dragover");
-            });
+            if (fileInput) {
+                fileInput.addEventListener("change", (e) => {
+                    if (e.target.files.length > 0) {
+                        this.handleFileSelect(e.target.files[0]);
+                    }
+                });
+            }
 
-            dropZone.addEventListener("dragleave", () => {
-                dropZone.classList.remove("dragover");
-            });
-
-            dropZone.addEventListener("drop", (e) => {
-                e.preventDefault();
-                dropZone.classList.remove("dragover");
-                if (e.dataTransfer.files.length > 0) {
-                    this.handleFileSelect(e.dataTransfer.files[0]);
-                }
-            });
-
-            fileInput.addEventListener("change", (e) => {
-                if (e.target.files.length > 0) {
-                    this.handleFileSelect(e.target.files[0]);
-                }
-            });
-
-            convertBtn.addEventListener("click", () => {
-                if (this._selectedFile) {
-                    this.processExcel(this._selectedFile);
-                }
-            });
+            if (convertBtn) {
+                convertBtn.addEventListener("click", () => {
+                    if (this._selectedFile) {
+                        this.processExcel(this._selectedFile);
+                    }
+                });
+            }
         }
 
         handleFileSelect(file) {
@@ -161,15 +160,25 @@
             const convertBtn = this._shadowRoot.getElementById("convertBtn");
             const statusMsg = this._shadowRoot.getElementById("statusMsg");
 
-            fileNameDisplay.textContent = file.name;
-            convertBtn.disabled = false;
-            statusMsg.textContent = "";
+            if (fileNameDisplay) fileNameDisplay.textContent = file.name;
+            if (convertBtn) convertBtn.disabled = false;
+            if (statusMsg) statusMsg.textContent = "";
         }
 
         processExcel(file) {
             const statusMsg = this._shadowRoot.getElementById("statusMsg");
-            statusMsg.className = "status-msg";
-            statusMsg.textContent = "İşleniyor...";
+            if (statusMsg) {
+                statusMsg.className = "status-msg";
+                statusMsg.textContent = "İşleniyor...";
+            }
+
+            if (!window.XLSX) {
+                if (statusMsg) {
+                    statusMsg.className = "status-msg error";
+                    statusMsg.textContent = "Kütüphane yükleniyor, lütfen tekrar deneyin.";
+                }
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -186,11 +195,9 @@
                     const headers = jsonData[0];
                     const rows = jsonData.slice(1);
 
-                    // 1. Gösterge (Miktar/Fiyat/Tutar) Sütununu Tespit Et
                     let typeCol = -1;
                     for (let j = 0; j < headers.length; j++) {
                         const hVal = String(headers[j]).trim();
-                        // 6 haneli sayısal tarih başlığı gördüğümüz sütunun bir öncesi tür sütunudur
                         if (!isNaN(hVal) && hVal.length >= 6) {
                             typeCol = j - 1;
                             break;
@@ -198,9 +205,8 @@
                     }
 
                     if (typeCol === -1) {
-                        // Eğer başlıktan bulunamadıysa metin kontrolü yap
                         for (let j = 0; j < headers.length; j++) {
-                            const val = String(rows[0][j] || "").toUpperCase();
+                            const val = String(rows[0] ? rows[0][j] : "").toUpperCase();
                             if (val.includes("MİKTAR") || val.includes("MIKTAR") || val.includes("FİYAT") || val.includes("FIYAT") || val.includes("TUTAR")) {
                                 typeCol = j;
                                 break;
@@ -215,12 +221,10 @@
                     const keyColsCount = typeCol;
                     const dateStartCol = typeCol + 1;
 
-                    // 2. Metrik Türlerini Tespit Et
                     const metrics = Array.from(new Set(
                         rows.map(r => String(r[typeCol] || "").trim()).filter(Boolean)
                     ));
 
-                    // 3. Dönüştürme/Gruplama Mantığı
                     const groupedData = {};
 
                     rows.forEach(row => {
@@ -250,7 +254,6 @@
                         }
                     });
 
-                    // 4. Yeni Tablo Başlıkları ve Satırları
                     const outputHeaders = [];
                     for (let k = 0; k < keyColsCount; k++) {
                         outputHeaders.push(headers[k]);
@@ -267,23 +270,29 @@
                         outputRows.push(rowData);
                     });
 
-                    // 5. İndirme Dosyası Oluşturma
                     const newWs = XLSX.utils.aoa_to_sheet(outputRows);
                     const newWb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(newWb, newWs, "Dönüştürülmüş_Veri");
 
                     XLSX.writeFile(newWb, "Donusturulmus_Veri.xlsx");
 
-                    statusMsg.className = "status-msg success";
-                    statusMsg.textContent = "✓ Başarıyla dönüştürüldü ve indirildi!";
+                    if (statusMsg) {
+                        statusMsg.className = "status-msg success";
+                        statusMsg.textContent = "✓ Başarıyla dönüştürüldü ve indirildi!";
+                    }
                 } catch (err) {
-                    statusMsg.className = "status-msg error";
-                    statusMsg.textContent = "Hata: " + err.message;
+                    if (statusMsg) {
+                        statusMsg.className = "status-msg error";
+                        statusMsg.textContent = "Hata: " + err.message;
+                    }
                 }
             };
             reader.readAsArrayBuffer(file);
         }
     }
 
-    customElements.define("sac-simple-unpivot-widget", SimpleUnpivotWidget);
+    // SAC Yeniden Yükleme Çakışmalarını Önleme
+    if (!customElements.get("sac-simple-unpivot-widget")) {
+        customElements.define("sac-simple-unpivot-widget", SimpleUnpivotWidget);
+    }
 })();
