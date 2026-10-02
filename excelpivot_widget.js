@@ -164,9 +164,10 @@
             reader.onload = (e) => {
                 try {
                     const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: "array" });
+                    // Boş hücrelerin null/undefined olarak okunması için raw seçeneği ekli
+                    const workbook = XLSX.read(data, { type: "array", cellHTML: false });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
 
                     if (jsonData.length < 2) throw new Error("Veri yetersiz.");
 
@@ -213,13 +214,13 @@
 
                             if (!groupedData[groupKey]) {
                                 groupedData[groupKey] = { keyParts, date: dateVal, values: {} };
-                                // Varsayılan değer olarak 0 yerine boş metin "" atıyoruz
+                                // Varsayılan değer olarak kesin şekilde boş metin "" atanır
                                 metrics.forEach(m => groupedData[groupKey].values[m] = "");
                             }
 
-                            // Hücrede değer varsa sayıya dönüştürüp alıyoruz, yoksa boş "" bırakıyoruz
                             const rawVal = row[j];
-                            if (rawVal !== undefined && rawVal !== null && rawVal !== "") {
+                            // Sadece dolu ve 0 haricindeki değerleri veya sayısal 0'ı (eğer giren 0 ise) kontrol edelim
+                            if (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== "") {
                                 const parsedVal = parseFloat(rawVal);
                                 groupedData[groupKey].values[metricName] = isNaN(parsedVal) ? rawVal : parsedVal;
                             }
