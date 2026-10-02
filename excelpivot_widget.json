@@ -12,7 +12,7 @@
     {
       "kind": "main",
       "tag": "sac-simple-unpivot-widget",
-      "url": "https://raw.githubusercontent.com/kemalettinkemalettinoglu-tech/sacwidget/main/webcomponent.js",
+      "url": "https://raw.githubusercontent.com/kemalettinkemalettinoglu-tech/sacwidget/main/excelpivot_widget.js",
       "integrity": "",
       "ignoreIntegrity": true
     }
