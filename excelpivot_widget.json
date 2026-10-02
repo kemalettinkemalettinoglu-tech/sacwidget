@@ -1,0 +1,19 @@
+{
+  "id": "com.company.sac.simpleUnpivotWidget",
+  "version": "1.0.0",
+  "name": "Excel Unpivot Converter",
+  "description": "Matris formatındaki Excel tablolarını dinamik olarak alt alta dönüştürür.",
+  "newInstancePrefix": "UnpivotWidget",
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "sac-simple-unpivot-widget",
+      "url": ""url": "https://kemalettinkemalettinoglu-tech.github.io/sacwidget/excelpivot_widget.js"",
+      "integrity": "",
+      "ignoreInExport": false
+    }
+  ],
+  "properties": {},
+  "methods": {},
+  "events": {}
+}
