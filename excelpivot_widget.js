@@ -166,7 +166,7 @@
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: "array" });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw: false, defval: null });
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw: false });
 
                     if (jsonData.length < 2) throw new Error("Veri yetersiz.");
 
@@ -199,6 +199,15 @@
                     const metrics = Array.from(new Set(rows.map(r => String(r[typeCol] || "").trim()).filter(Boolean)));
                     const groupedData = {};
 
+                    // Yardımcı Fonksiyon: Bir değerin 0 veya Boş olup olmadığını kesin denetleme
+                    const isZeroOrEmpty = (val) => {
+                        if (val === null || val === undefined) return true;
+                        const str = String(val).trim();
+                        if (str === "" || str === "0" || str === "0.0" || str === "0.00" || str === "0,00" || str === "0,0") return true;
+                        const num = parseFloat(str.replace(",", "."));
+                        return !isNaN(num) && num === 0;
+                    };
+
                     rows.forEach(row => {
                         const metricName = String(row[typeCol] || "").trim();
                         if (!metricName) return;
@@ -213,17 +222,13 @@
 
                             if (!groupedData[groupKey]) {
                                 groupedData[groupKey] = { keyParts, date: dateVal, values: {} };
-                                metrics.forEach(m => groupedData[groupKey].values[m] = null);
+                                metrics.forEach(m => groupedData[groupKey].values[m] = undefined);
                             }
 
                             const rawVal = row[j];
-                            if (rawVal !== null && rawVal !== undefined && String(rawVal).trim() !== "") {
-                                const parsedVal = parseFloat(rawVal);
-                                const isZero = (parsedVal === 0) || (String(rawVal).trim() === "0");
-                                
-                                if (!isZero) {
-                                    groupedData[groupKey].values[metricName] = isNaN(parsedVal) ? rawVal : parsedVal;
-                                }
+                            if (!isZeroOrEmpty(rawVal)) {
+                                const parsedVal = parseFloat(String(rawVal).replace(",", "."));
+                                groupedData[groupKey].values[metricName] = isNaN(parsedVal) ? rawVal : parsedVal;
                             }
                         }
                     });
@@ -241,8 +246,8 @@
 
                         metrics.forEach(m => {
                             const val = item.values[m];
-                            if (val === null || val === undefined || val === 0 || val === "0" || val === "") {
-                                rowData.push(null); // Doğrudan null veriyoruz ki Excel boş görsün
+                            if (isZeroOrEmpty(val)) {
+                                rowData.push(""); // Metrik boşsa kesin olarak boş metin yaz
                             } else {
                                 rowData.push(val);
                             }
@@ -251,29 +256,29 @@
                         outputRows.push(rowData);
                     });
 
-                    // 1. AOA sayfasını oluştur
+                    // AOA Dönüşümü
                     const newWs = XLSX.utils.aoa_to_sheet(outputRows);
 
-                    // 2. KESİN ÇÖZÜM: Excel çalışma sayfasındaki değerleri hücresel bazda tara ve sıfır/null hücreleri yok et
-                    const metricStartColIdx = keyColsCount + 1; // Metriklerin başladığı sütun indeksi (0 tabanlı)
-                    
-                    Object.keys(newWs).forEach(cell => {
-                        if (cell.startsWith("!")) return; // Sayfa metadatasını atla
+                    // --- EN AGRESİF HÜCRE TEMİZLİK ADIMI ---
+                    // Sayfadaki tüm hücre adlarını tara
+                    Object.keys(newWs).forEach(cellRef => {
+                        if (cellRef.startsWith("!")) return;
                         
-                        const cellObj = newWs[cell];
-                        const colName = cell.replace(/[0-9]/g, ""); // A, B, H, I, J vs.
-                        
-                        // Kolon indeksini bul
-                        let colIdx = 0;
-                        for (let i = 0; i < colName.length; i++) {
-                            colIdx = colIdx * 26 + (colName.charCodeAt(i) - 64);
-                        }
-                        colIdx = colIdx - 1; // 0 tabanlı yap
-
-                        // Eğer bu hücre metrik sütunlarındaysa (H, I, J...) ve değeri 0 ya da boş ise hücreyi sıfırla
-                        if (colIdx >= metricStartColIdx && cellObj) {
-                            if (cellObj.v === 0 || cellObj.v === "0" || cellObj.v === null || cellObj.v === "") {
-                                delete newWs[cell]; // Hücreyi Excel yapısından tamamen sil (tamamen boş kalsın)
+                        const cell = newWs[cellRef];
+                        if (cell && isZeroOrEmpty(cell.v)) {
+                            // Hücre metrik alanındaysa (Tarihten sonraki kolonlar)
+                            const colName = cellRef.replace(/[0-9]/g, "");
+                            let colIdx = 0;
+                            for (let i = 0; i < colName.length; i++) {
+                                colIdx = colIdx * 26 + (colName.charCodeAt(i) - 64);
+                            }
+                            
+                            // Gösterge metrikleri alanındaki sıfırları tamamen imha et
+                            if (colIdx > keyColsCount + 1) {
+                                cell.v = "";      // Değeri boş yap
+                                cell.t = "s";     // Tipi String yap (Excel'in sayıya çevirmesini engelle)
+                                delete cell.w;    // Formatlı metni sil
+                                delete cell.z;    // Sayı biçimini sil
                             }
                         }
                     });
