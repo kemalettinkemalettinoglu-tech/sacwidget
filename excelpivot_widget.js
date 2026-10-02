@@ -213,10 +213,16 @@
 
                             if (!groupedData[groupKey]) {
                                 groupedData[groupKey] = { keyParts, date: dateVal, values: {} };
-                                metrics.forEach(m => groupedData[groupKey].values[m] = 0);
+                                // Varsayılan değer olarak 0 yerine boş metin "" atıyoruz
+                                metrics.forEach(m => groupedData[groupKey].values[m] = "");
                             }
 
-                            groupedData[groupKey].values[metricName] = parseFloat(row[j]) || 0;
+                            // Hücrede değer varsa sayıya dönüştürüp alıyoruz, yoksa boş "" bırakıyoruz
+                            const rawVal = row[j];
+                            if (rawVal !== undefined && rawVal !== null && rawVal !== "") {
+                                const parsedVal = parseFloat(rawVal);
+                                groupedData[groupKey].values[metricName] = isNaN(parsedVal) ? rawVal : parsedVal;
+                            }
                         }
                     });
 
@@ -252,7 +258,6 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // SAC Lifecycle boş metod tanımları (Hata almamak için gereklidir)
         onCustomWidgetBeforeUpdate(oChangedProperties) {}
         onCustomWidgetAfterUpdate(oChangedProperties) {}
         onCustomWidgetDestroy() {}
