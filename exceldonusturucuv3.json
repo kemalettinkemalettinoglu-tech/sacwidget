@@ -1,0 +1,23 @@
+{
+  "id": "com.company.sac.simpleUnpivotWidget",
+  "version": "1.0.0",
+  "name": "Excel Unpivot Converter",
+  "description": "Matris formatindaki Excel tablolarini dinamik olarak alt alta donusturur.",
+  "newInstancePrefix": "UnpivotWidget",
+  "vendor": "Kemalettin",
+  "eula": "",
+  "license": "MIT",
+  "icon": "",
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "sac-simple-unpivot-widget",
+      "url": "https://cdn.jsdelivr.net/gh/kemalettinkemalettinoglu-tech/sacwidget@main/exceldonusturucuv3.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    }
+  ],
+  "properties": {},
+  "methods": {},
+  "events": {}
+}
