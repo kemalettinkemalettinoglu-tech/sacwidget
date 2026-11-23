@@ -1,0 +1,23 @@
+{
+  "id": "com.company.sac.parameterUnpivotWidget",
+  "version": "1.0.0",
+  "name": "Excel Parameter Pivot Dönüştürücü",
+  "description": "Metrik bloklarını PARAMETER satırlarına ayrıştırarak DATE ve metrik kolonlarıyla dikey formata dönüştürür.",
+  "newInstancePrefix": "ExcelParamUnpivotWidget",
+  "vendor": "Kemalettin",
+  "eula": "",
+  "license": "MIT",
+  "icon": "",
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "sac-parameter-unpivot-widget",
+      "url": "https://cdn.jsdelivr.net/gh/kemalettinkemalettinoglu-tech/sacwidget@v2.0.0/excelmacrov7.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    }
+  ],
+  "properties": {},
+  "methods": {},
+  "events": {}
+}
