@@ -1,0 +1,23 @@
+{
+  "id": "com.company.sac.paramMatrixPivotV3",
+  "version": "1.0.0",
+  "name": "Excel Pivot Dönüştürücü",
+  "description": "Metrik bloklarını PARAMETER satırlarına ayrıştırarak DATE ve metrik kolonlarıyla dikey formata dönüştürür.",
+  "newInstancePrefix": "ExcelParamPivotV3",
+  "vendor": "Kemalettin",
+  "eula": "",
+  "license": "MIT",
+  "icon": "",
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "sac-param-matrix-pivot-v3",
+      "url": "https://cdn.jsdelivr.net/gh/kemalettinkemalettinoglu-tech/sacwidget@vmain/excelmacrov8.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    }
+  ],
+  "properties": {},
+  "methods": {},
+  "events": {}
+}
